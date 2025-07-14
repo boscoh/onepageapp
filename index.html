@@ -1,0 +1,133 @@
+<head>
+  <!-- avoid text rendering issues on various platforms -->
+  <meta charset="utf-8" />
+
+  <!-- prevent auto-zooming on mobile browsers -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Font Awesome -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <!-- Pug template compiler -->
+  <script src="https://pugjs.org/js/pug.js"></script>
+  <script>
+    window.pug = require("pug");
+    function renderPug(str) {
+      const lines = str.replace(/^\n/, "").split("\n");
+      const minIndent = Math.min(
+        ...lines.filter((l) => l.trim()).map((l) => l.match(/^\s*/)[0].length),
+      );
+      return pug.render(lines.map((l) => l.slice(minIndent)).join("\n"));
+    }
+  </script>
+
+  <!-- Lodash -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js"></script>
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+  <!-- Ky -->
+  <script type="module">
+    import ky from "https://unpkg.com/ky/distribution/index.js";
+    window.ky = ky;
+  </script>
+
+  <script src="graph-data.js"></script>
+</head>
+
+<body>
+  <div id="app"></div>
+</body>
+
+<script>
+  function init() {
+    Vue.createApp({
+      // language=pug
+      template: renderPug(`
+        .text-center
+
+          .pt-5
+          .mt-5
+          h1
+            i.fas.fa-home.me-2
+          h1 {{ title }}
+
+          .mt-5
+          button.btn-sm.btn-primary(@click="modal") Open modal
+
+          .p-5
+            code optional load from './graph-data.js'
+            .card.px-3
+              #plot
+
+          code await ky.get("{{ url }}").json()
+          .p-.text-center
+            .card.p-3.text-start.mx-auto.overfow-auto(style="max-width: 500px")
+              pre {{ downloadData }}
+
+          .pb-5
+          .pb-5
+
+        #myModal.modal
+          .modal-dialog
+            .modal-content
+              .modal-header.justify-content-center
+                h3.m-0 Modal
+                button.btn-close(data-bs-dismiss="modal")
+              .modal-body.mt-3.mb-5
+                | This is a one page html template with
+                ul.m-0
+                  li Vue
+                  li Bootstrap
+                  li Font Awesome
+                  li Pug
+                  li Lodash
+                  li Ky
+                | preloaded and ready to go.
+      `),
+
+      data() {
+        return {
+          title: "OnePageApp",
+          url: 'https://restcountries.com/v3.1/name/canada',
+          downloadData: {},
+        };
+      },
+
+      async mounted() {
+        document.title = this.title;
+        if (graphData) {
+          Plotly.newPlot("plot", graphData.traces, graphData.layout, {
+            displayModeBar: false,
+            responsive: true,
+          });
+        }
+        this.downloadData = await ky.get('https://restcountries.com/v3.1/name/canada').json()
+        console.log(resp)
+      },
+
+      methods: {
+        modal() {
+          let myModal = new bootstrap.Modal(document.getElementById("myModal"));
+          myModal.show();
+        },
+      },
+    }).mount("#app");
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+</script>
