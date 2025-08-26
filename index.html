@@ -107,6 +107,18 @@
 
   const { createApp, ref, onMounted } = Vue;
 
+  function deepCamelCaseKeys(value) {
+    if (_.isArray(value)) {
+      return value.map(deepCamelCaseKeys);
+    }
+    if (_.isPlainObject(value)) {
+      const camelKeyed = _.mapKeys(value, (v, k) => _.camelCase(k));
+      return _.mapValues(camelKeyed, deepCamelCaseKeys);
+    }
+    return value;
+  }
+
+
   function plotGraphs(graphs) {
     for (let graph of graphs) {
       const element = document.getElementById(graph.id);
@@ -124,12 +136,12 @@
       console.error("Failed to fetch data:", error);
       result = { error: "Failed to load data" };
     }
-    return result;
+    return deepCamelCaseKeys(result);
   }
 
   function setup() {
     const title = ref("OnePageApp");
-    const graphs = ref(window.graphs || []);
+    const graphs = ref(deepCamelCaseKeys(window.graphs) || []);
     const url = ref("https://restcountries.com/v3.1/name/canada");
     const downloadData = ref({});
 
