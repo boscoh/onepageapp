@@ -118,7 +118,6 @@
     return value;
   }
 
-
   function plotGraphs(graphs) {
     for (let graph of graphs) {
       const element = document.getElementById(graph.id);
@@ -128,7 +127,7 @@
     }
   }
 
-  async function getData(url) {
+  async function getJson(url) {
     let result;
     try {
       result = await ky.get(url).json();
@@ -148,7 +147,7 @@
     onMounted(async () => {
       document.title = title.value;
       plotGraphs(graphs.value);
-      downloadData.value = await getData(url.value);
+      downloadData.value = await getJson(url.value);
     });
 
     return {
